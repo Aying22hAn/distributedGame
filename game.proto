@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package maze_game;
+
+// Service definition for the Distributed Maze Game
+// Định nghĩa các hàm RPC mà Client có thể gọi lên Server
+service GameService {
+    // Người chơi tham gia game
+    rpc Join (JoinRequest) returns (JoinResponse);
+    
+    // Gửi lệnh di chuyển (Input)
+    rpc Move (MoveRequest) returns (MoveResponse);
+    
+    // Gửi lệnh bắn đạn
+    rpc Shoot (ShootRequest) returns (ShootResponse);
+    
+    // Người chơi chủ động thoát game
+    rpc Leave (LeaveRequest) returns (LeaveResponse);
+    
+    // Luồng dữ liệu trạng thái game (Global State Streaming)
+    // Server sẽ gửi liên tục cập nhật về cho Client
+    rpc GetGameState (GameStateRequest) returns (stream GameState); 
+}
+
+message Empty {}
+
+// Hướng di chuyển: Lên, Xuống, Trái, Phải
+enum Direction {
+    UP = 0;
+    DOWN = 1;
+    LEFT = 2;
+    RIGHT = 3;
+}
+
+// Yêu cầu tham gia: Chỉ cần gửi tên
+message JoinRequest {
+    string name = 1;
+}
+
+// Phản hồi khi tham gia: Server cấp ID, vị trí bắt đầu và bản đồ tường
+message JoinResponse {
+    string player_id = 1;
+    int32 start_x = 2;
+    int32 start_y = 3;
+    Direction start_direction = 4;
+    repeated int32 walls = 5; // Danh sách tọa độ tường (x, y phẳng)
+}
+
+message MoveRequest {
+    string player_id = 1;
+    Direction direction = 2;
+}
+
+message MoveResponse {
+    bool success = 1; // Trả về false nếu đụng tường hoặc người khác
+}
+
+message ShootRequest {
+    string player_id = 1;
+}
+
+message ShootResponse {
+    bool success = 1;
+}
+
+message LeaveRequest {
+    string player_id = 1;
+}
+message LeaveResponse {
+    bool success = 1;
+}
+
+// Yêu cầu lấy trạng thái game (cần ID để Server tracking kết nối)
+message GameStateRequest {
+    string player_id = 1;
+}
+
+// Thông tin chi tiết của một người chơi
+message PlayerInfo {
+    string name = 1;
+    int32 x = 2;
+    int32 y = 3;
+    int32 score = 4;
+    Direction direction = 5;
+}
+
+// Thông tin chi tiết của một viên đạn
+message BulletInfo {
+    string id = 1;
+    int32 x = 2;
+    int32 y = 3;
+    Direction direction = 4;
+}
+
+// Trạng thái toàn cục (Snapshot) của game tại một thời điểm
+message GameState {
+    map<string, PlayerInfo> players = 1; // Danh sách người chơi
+    repeated BulletInfo bullets = 2;     // Danh sách đạn đang bay
+    repeated string logs = 3;            // Các dòng log sự kiện
+}
