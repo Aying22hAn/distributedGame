@@ -206,10 +206,6 @@ class GameClient:
                 self.screen.blit(l_surf, (GAME_W + 10, y_log))
                 y_log += 18
 
-        # --- GHI CHÚ ĐIỀU KHIỂN ---
-        # Hiển thị hướng dẫn thoát ở góc dưới
-        help_text = self.font.render("Press 'Q' to Exit", True, (150, 150, 150))
-        self.screen.blit(help_text, (GAME_W + 20, WINDOW_H - 30))
 
         pygame.display.flip()
 
